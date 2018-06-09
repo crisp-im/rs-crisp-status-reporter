@@ -1,5 +1,5 @@
 [package]
-name = "rs-crisp-status-reporter"
+name = "crisp-status-reporter"
 version = "1.0.0"
 description = "Crisp Status Reporter for Rust."
 readme = "README.md"
