@@ -13,10 +13,10 @@ use std::cmp::max;
 
 use sys_info::{cpu_num, loadavg, mem_info};
 use reqwest::{Client, StatusCode, RedirectPolicy};
-use reqwest::header::{Headers, Authorization, Basic};
+use reqwest::header::{Headers, UserAgent, Authorization, Basic};
 
 static LOG_NAME: &'static str = "Crisp Status Reporter";
-static REPORT_URL: &'static str = "https://report.crisp.watch/";
+static REPORT_URL: &'static str = "https://report.crisp.watch/v1";
 
 pub struct Reporter<'a> {
     token: &'a str,
@@ -69,6 +69,10 @@ impl<'a> Reporter<'a> {
         // Build HTTP client
         let mut headers = Headers::new();
 
+        headers.set(UserAgent::new(
+            format!("rs-{}/{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"))
+        ));
+
         headers.set(Authorization(Basic {
             username: "".to_owned(),
             password: Some(self.token.to_owned()),
@@ -86,7 +90,7 @@ impl<'a> Reporter<'a> {
         match (self.probe_id, self.node_id, self.replica_id, http_client) {
             (Some(probe_id), Some(node_id), Some(replica_id), Ok(client)) => {
                 let manager = ReporterManager {
-                    report_url: format!("{}/reporter/{}/{}/", REPORT_URL, probe_id, node_id),
+                    report_url: format!("{}/{}/{}/", REPORT_URL, probe_id, node_id),
                     replica_id: replica_id.to_owned(),
                     interval: self.interval,
                     client: client,
