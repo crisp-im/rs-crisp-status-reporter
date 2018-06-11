@@ -20,7 +20,7 @@ static REPORT_URL: &'static str = "https://report.crisp.watch/v1";
 
 pub struct Reporter<'a> {
     token: &'a str,
-    probe_id: Option<&'a str>,
+    service_id: Option<&'a str>,
     node_id: Option<&'a str>,
     replica_id: Option<&'a str>,
     interval: Duration,
@@ -55,7 +55,7 @@ impl<'a> Reporter<'a> {
         ReporterBuilder {
             reporter: Reporter {
                 token: token,
-                probe_id: None,
+                service_id: None,
                 node_id: None,
                 replica_id: None,
                 interval: Duration::from_secs(30),
@@ -87,10 +87,10 @@ impl<'a> Reporter<'a> {
             .build();
 
         // Build thread manager context?
-        match (self.probe_id, self.node_id, self.replica_id, http_client) {
-            (Some(probe_id), Some(node_id), Some(replica_id), Ok(client)) => {
+        match (self.service_id, self.node_id, self.replica_id, http_client) {
+            (Some(service_id), Some(node_id), Some(replica_id), Ok(client)) => {
                 let manager = ReporterManager {
-                    report_url: format!("{}/{}/{}/", REPORT_URL, probe_id, node_id),
+                    report_url: format!("{}/{}/{}/", REPORT_URL, service_id, node_id),
                     replica_id: replica_id.to_owned(),
                     interval: self.interval,
                     client: client,
@@ -110,8 +110,8 @@ impl<'a> Reporter<'a> {
 
 impl<'a> ReporterBuilder<'a> {
     pub fn build(self) -> Reporter<'a> {
-        if self.reporter.probe_id.is_none() {
-            panic!("missing probe_id");
+        if self.reporter.service_id.is_none() {
+            panic!("missing service_id");
         }
         if self.reporter.node_id.is_none() {
             panic!("missing node_id");
@@ -123,8 +123,8 @@ impl<'a> ReporterBuilder<'a> {
         self.reporter
     }
 
-    pub fn probe_id(mut self, probe_id: &'a str) -> ReporterBuilder<'a> {
-        self.reporter.probe_id = Some(probe_id);
+    pub fn service_id(mut self, service_id: &'a str) -> ReporterBuilder<'a> {
+        self.reporter.service_id = Some(service_id);
 
         self
     }

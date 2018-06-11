@@ -32,8 +32,8 @@ use crisp_status_reporter::Reporter;
 
 // Build reporter
 let reporter = Reporter::new("YOUR_TOKEN_SECRET")
-  .probe_id("relay")                  // Probe ID containing the parent Node for Replica
-  .node_id("socket-client")           // Node ID containing Replica
+  .service_id("YOUR_SERVICE_ID")      // Service ID containing the parent Node for Replica (given by Crisp)
+  .node_id("YOUR_NODE_ID")            // Node ID containing Replica (given by Crisp)
   .replica_id("192.168.1.10")         // Unique Replica ID for instance (ie. your IP on the LAN)
   .interval(Duration::from_secs(30))  // Reporting interval (in seconds; defaults to 30 seconds if not set)
   .build();

@@ -21,8 +21,8 @@ fn initialize_valid() {
     setup();
 
     Reporter::new("YOUR_TOKEN_SECRET")
-      .probe_id("relay")
-      .node_id("socket-client")
+      .service_id("d657b4c1-dd07-4f94-ac7a-d4c3b4b219c1")
+      .node_id("5eca824b-4134-4126-982d-2c2338ecf3ab")
       .replica_id("192.168.1.10")
       .interval(Duration::from_secs(30))
       .build();
@@ -30,11 +30,11 @@ fn initialize_valid() {
 
 #[test]
 #[should_panic]
-fn initialize_invalid_probe_id() {
+fn initialize_invalid_service_id() {
     setup();
 
     Reporter::new("YOUR_TOKEN_SECRET")
-      .node_id("socket-client")
+      .node_id("5eca824b-4134-4126-982d-2c2338ecf3ab")
       .replica_id("192.168.1.10")
       .build();
 }
@@ -45,7 +45,7 @@ fn initialize_invalid_node_id() {
     setup();
 
     Reporter::new("YOUR_TOKEN_SECRET")
-      .probe_id("relay")
+      .service_id("d657b4c1-dd07-4f94-ac7a-d4c3b4b219c1")
       .replica_id("192.168.1.10")
       .build();
 }
@@ -56,8 +56,8 @@ fn initialize_invalid_replica_id() {
     setup();
 
     Reporter::new("YOUR_TOKEN_SECRET")
-      .probe_id("relay")
-      .node_id("socket-client")
+      .service_id("d657b4c1-dd07-4f94-ac7a-d4c3b4b219c1")
+      .node_id("5eca824b-4134-4126-982d-2c2338ecf3ab")
       .build();
 }
 
@@ -66,8 +66,8 @@ fn run_and_end_valid() {
     setup();
 
     let reporter = Reporter::new("YOUR_TOKEN_SECRET")
-      .probe_id("relay")
-      .node_id("socket-client")
+      .service_id("d657b4c1-dd07-4f94-ac7a-d4c3b4b219c1")
+      .node_id("5eca824b-4134-4126-982d-2c2338ecf3ab")
       .replica_id("192.168.1.10")
       .build();
 
