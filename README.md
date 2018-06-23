@@ -15,7 +15,7 @@ Include `crisp-status-reporter` in your `Cargo.toml` dependencies:
 
 ```toml
 [dependencies]
-crisp-status-reporter = "1.0"
+crisp-status-reporter = "1.1"
 ```
 
 ## How to use?
