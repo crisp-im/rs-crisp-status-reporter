@@ -39,7 +39,7 @@ struct ReporterManager {
 
 #[derive(Serialize, Debug)]
 struct ReportPayload<'a> {
-    replica: &'a str,
+    replica_id: &'a str,
     interval: u64,
     load: ReportPayloadLoad,
 }
@@ -177,7 +177,7 @@ impl ReporterManager {
 
         // Generate report payload
         let payload = ReportPayload {
-            replica: &self.replica_id,
+            replica_id: &self.replica_id,
             interval: self.interval.as_secs(),
             load: ReportPayloadLoad {
                 cpu: Self::get_load_cpu(),
