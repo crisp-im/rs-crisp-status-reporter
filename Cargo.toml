@@ -1,6 +1,6 @@
 [package]
 name = "crisp-status-reporter"
-version = "1.1.1"
+version = "1.1.2"
 description = "Crisp Status Reporter for Rust."
 readme = "README.md"
 license = "MIT"

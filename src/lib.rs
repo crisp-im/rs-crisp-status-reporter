@@ -90,7 +90,7 @@ impl<'a> Reporter<'a> {
         match (self.service_id, self.node_id, self.replica_id, http_client) {
             (Some(service_id), Some(node_id), Some(replica_id), Ok(client)) => {
                 let manager = ReporterManager {
-                    report_url: format!("{}/{}/{}/", REPORT_URL, service_id, node_id),
+                    report_url: format!("{}/report/{}/{}/", REPORT_URL, service_id, node_id),
                     replica_id: replica_id.to_owned(),
                     interval: self.interval,
                     client: client,
