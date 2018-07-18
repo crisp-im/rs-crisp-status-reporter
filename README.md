@@ -41,3 +41,20 @@ let reporter = Reporter::new("YOUR_TOKEN_SECRET")
 // Run reporter (starts reporting)
 reporter.run();
 ```
+
+## Where can I find my token?
+
+Your private token can be found on your [Crisp dashboard](https://app.crisp.chat/). Go to Settings, then Status Page, and then scroll down to "Configure your Status Reporter". Copy the secret token shown there, and use it while configuring this library in your application.
+
+## How to add monitored node?
+
+You can easily add a push node for the application running this library on your Crisp dashboard. Add the node, and retrieve its `service_id` and `node_id` as follows:
+
+<p align="center">
+  <img height="300" src="https://crisp-im.github.io/rs-crisp-status-reporter/images/setup.gif" alt="How to add monitored node">
+</p>
+
+## Get more help
+
+You can find more help on our helpdesk article: [How to setup the Crisp Status Reporter library?](https://help.crisp.chat/en/article/how-to-setup-the-crisp-status-reporter-library-1koqk09/)
+
