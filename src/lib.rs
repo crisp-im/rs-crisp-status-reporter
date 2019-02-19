@@ -4,16 +4,16 @@
 extern crate log;
 #[macro_use]
 extern crate serde_derive;
-extern crate sys_info;
 extern crate reqwest;
+extern crate sys_info;
 
+use std::cmp::max;
 use std::thread;
 use std::time::Duration;
-use std::cmp::max;
 
+use reqwest::header::{Authorization, Basic, Headers, UserAgent};
+use reqwest::{Client, RedirectPolicy, StatusCode};
 use sys_info::{cpu_num, loadavg, mem_info};
-use reqwest::{Client, StatusCode, RedirectPolicy};
-use reqwest::header::{Headers, UserAgent, Authorization, Basic};
 
 static LOG_NAME: &'static str = "Crisp Status Reporter";
 static REPORT_URL: &'static str = "https://report.crisp.watch/v1";
@@ -69,9 +69,11 @@ impl<'a> Reporter<'a> {
         // Build HTTP client
         let mut headers = Headers::new();
 
-        headers.set(UserAgent::new(
-            format!("rs-{}/{}", env!("CARGO_PKG_NAME"), env!("CARGO_PKG_VERSION"))
-        ));
+        headers.set(UserAgent::new(format!(
+            "rs-{}/{}",
+            env!("CARGO_PKG_NAME"),
+            env!("CARGO_PKG_VERSION")
+        )));
 
         headers.set(Authorization(Basic {
             username: "".to_owned(),
@@ -187,9 +189,7 @@ impl ReporterManager {
 
         debug!(
             "{}: Will send request to URL: {} with payload: {:?}",
-            LOG_NAME,
-            &self.report_url,
-            payload
+            LOG_NAME, &self.report_url, payload
         );
 
         // Submit report payload

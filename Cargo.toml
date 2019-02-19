@@ -1,9 +1,10 @@
 [package]
 name = "crisp-status-reporter"
-version = "1.2.0"
+version = "1.2.1"
 description = "Crisp Status Reporter for Rust."
 readme = "README.md"
 license = "MIT"
+edition = "2018"
 homepage = "https://github.com/crisp-im/rs-crisp-status-reporter"
 repository = "https://github.com/crisp-im/rs-crisp-status-reporter.git"
 keywords = ["crisp", "microservices", "monitoring", "integration"]
