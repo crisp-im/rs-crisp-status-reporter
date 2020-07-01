@@ -1,6 +1,6 @@
 # rs-crisp-status-reporter
 
-[![Build Status](https://img.shields.io/travis/crisp-im/rs-crisp-status-reporter/master.svg)](https://travis-ci.org/crisp-im/rs-crisp-status-reporter) [![Dependency Status](https://deps.rs/repo/github/crisp-im/rs-crisp-status-reporter/status.svg)](https://deps.rs/repo/github/crisp-im/rs-crisp-status-reporter)
+[![Build Status](https://img.shields.io/travis/crisp-im/rs-crisp-status-reporter/master.svg)](https://travis-ci.org/crisp-im/rs-crisp-status-reporter)
 
 * [Documentation](https://docs.rs/crate/crisp-status-reporter)
 * [Crate](https://crates.io/crates/crisp-status-reporter)
