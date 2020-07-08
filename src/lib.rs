@@ -6,13 +6,16 @@ extern crate log;
 extern crate serde_derive;
 extern crate reqwest;
 extern crate sys_info;
+extern crate base64;
 
 use std::cmp::max;
 use std::thread;
 use std::time::Duration;
 
-use reqwest::header::{Authorization, Basic, Headers, UserAgent};
-use reqwest::{Client, RedirectPolicy, StatusCode};
+use reqwest::header::{HeaderMap, USER_AGENT, AUTHORIZATION};
+use reqwest::redirect::{Policy as RedirectPolicy};
+use reqwest::blocking::Client;
+use reqwest::StatusCode;
 use sys_info::{cpu_num, loadavg, mem_info};
 
 static LOG_NAME: &'static str = "Crisp Status Reporter";
@@ -67,24 +70,28 @@ impl<'a> Reporter<'a> {
         debug!("{}: Will run using URL: {}", LOG_NAME, REPORT_URL);
 
         // Build HTTP client
-        let mut headers = Headers::new();
+        let mut headers = HeaderMap::new();
 
-        headers.set(UserAgent::new(format!(
-            "rs-{}/{}",
-            env!("CARGO_PKG_NAME"),
-            env!("CARGO_PKG_VERSION")
-        )));
+        headers.insert(
+            USER_AGENT,
+            format!(
+                "rs-{}/{}",
+                env!("CARGO_PKG_NAME"),
+                env!("CARGO_PKG_VERSION")
+            ).parse().unwrap(),
+        );
 
-        headers.set(Authorization(Basic {
-            username: "".to_owned(),
-            password: Some(self.token.to_owned()),
-        }));
+        headers.insert(
+            AUTHORIZATION,
+            format!(
+                "Basic {}", base64::encode(format!(":{}", self.token))
+            ).parse().unwrap()
+        );
 
         let http_client = Client::builder()
             .timeout(Duration::from_secs(10))
             .redirect(RedirectPolicy::none())
             .gzip(true)
-            .enable_hostname_verification()
             .default_headers(headers)
             .build();
 
@@ -199,7 +206,7 @@ impl ReporterManager {
             Ok(response_inner) => {
                 let status = response_inner.status();
 
-                if status == StatusCode::Ok {
+                if status == StatusCode::OK {
                     debug!("{}: Request succeeded", LOG_NAME);
 
                     return Ok(());
