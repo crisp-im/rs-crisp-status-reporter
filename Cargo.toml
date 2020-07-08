@@ -21,7 +21,7 @@ name = "crisp_status_reporter"
 log = "0.4"
 serde = "1.0"
 serde_derive = "1.0"
-sys-info = "0.5"
+sys-info = "0.7"
 base64 = "0.12"
 reqwest = { version = "0.10", features = ["rustls-tls", "gzip", "blocking", "json"], default-features = false }
 
