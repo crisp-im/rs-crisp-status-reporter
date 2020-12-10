@@ -4,17 +4,17 @@
 extern crate log;
 #[macro_use]
 extern crate serde_derive;
+extern crate base64;
 extern crate reqwest;
 extern crate sys_info;
-extern crate base64;
 
 use std::cmp::max;
 use std::thread;
 use std::time::Duration;
 
-use reqwest::header::{HeaderMap, USER_AGENT, AUTHORIZATION};
-use reqwest::redirect::{Policy as RedirectPolicy};
 use reqwest::blocking::Client;
+use reqwest::header::{HeaderMap, AUTHORIZATION, USER_AGENT};
+use reqwest::redirect::Policy as RedirectPolicy;
 use reqwest::StatusCode;
 use sys_info::{cpu_num, loadavg, mem_info};
 
@@ -78,14 +78,16 @@ impl<'a> Reporter<'a> {
                 "rs-{}/{}",
                 env!("CARGO_PKG_NAME"),
                 env!("CARGO_PKG_VERSION")
-            ).parse().unwrap(),
+            )
+            .parse()
+            .unwrap(),
         );
 
         headers.insert(
             AUTHORIZATION,
-            format!(
-                "Basic {}", base64::encode(format!(":{}", self.token))
-            ).parse().unwrap()
+            format!("Basic {}", base64::encode(format!(":{}", self.token)))
+                .parse()
+                .unwrap(),
         );
 
         let http_client = Client::builder()
