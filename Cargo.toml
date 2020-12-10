@@ -11,9 +11,6 @@ keywords = ["crisp", "microservices", "monitoring", "integration"]
 categories = ["web-programming"]
 authors = ["Valerian Saliou <valerian@valeriansaliou.name>"]
 
-[badges]
-travis-ci = { repository = "crisp-im/rs-crisp-status-reporter", branch = "master" }
-
 [lib]
 name = "crisp_status_reporter"
 
