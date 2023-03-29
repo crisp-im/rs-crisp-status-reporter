@@ -9,11 +9,13 @@ extern crate http_req;
 extern crate sys_info;
 
 use std::cmp::max;
+use std::convert::TryFrom;
 use std::io;
 use std::thread;
 use std::time::Duration;
-use std::convert::TryFrom;
 
+use base64::engine::general_purpose::STANDARD as base64_encoder;
+use base64::Engine;
 use http_req::{
     request::{Method, Request},
     response::Headers,
@@ -84,12 +86,17 @@ impl<'a> Reporter<'a> {
                 "rs-{}/{}",
                 env!("CARGO_PKG_NAME"),
                 env!("CARGO_PKG_VERSION")
-            ).as_str(),
+            )
+            .as_str(),
         );
 
         headers.insert(
             "Authorization",
-            format!("Basic {}", base64::encode(format!(":{}", self.token))).as_str(),
+            format!(
+                "Basic {}",
+                base64_encoder.encode(&format!(":{}", self.token))
+            )
+            .as_str(),
         );
 
         // Build thread manager context?
