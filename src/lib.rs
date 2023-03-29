@@ -4,9 +4,6 @@
 extern crate log;
 #[macro_use]
 extern crate serde_derive;
-extern crate base64;
-extern crate http_req;
-extern crate sys_info;
 
 use std::cmp::max;
 use std::convert::TryFrom;
