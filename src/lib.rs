@@ -5,21 +5,27 @@ extern crate log;
 #[macro_use]
 extern crate serde_derive;
 extern crate base64;
-extern crate reqwest;
+extern crate http_req;
 extern crate sys_info;
 
 use std::cmp::max;
+use std::io;
 use std::thread;
 use std::time::Duration;
+use std::convert::TryFrom;
 
-use reqwest::blocking::Client;
-use reqwest::header::{HeaderMap, AUTHORIZATION, USER_AGENT};
-use reqwest::redirect::Policy as RedirectPolicy;
-use reqwest::StatusCode;
+use http_req::{
+    request::{Method, Request},
+    response::Headers,
+    uri::Uri,
+};
+use serde_json;
 use sys_info::{cpu_num, loadavg, mem_info};
 
 static LOG_NAME: &'static str = "Crisp Status Reporter";
-static REPORT_URL: &'static str = "https://report.crisp.watch/v1";
+static REPORT_URI: &'static str = "https://report.crisp.watch/v1";
+
+pub const HTTP_CLIENT_TIMEOUT: Duration = Duration::from_secs(10);
 
 pub struct Reporter<'a> {
     token: &'a str,
@@ -34,10 +40,10 @@ pub struct ReporterBuilder<'a> {
 }
 
 struct ReporterManager {
-    report_url: String,
+    report_uri: String,
     replica_id: String,
     interval: Duration,
-    client: Client,
+    headers: Headers,
 }
 
 #[derive(Serialize, Debug)]
@@ -67,44 +73,33 @@ impl<'a> Reporter<'a> {
     }
 
     pub fn run(&self) -> Result<(), ()> {
-        debug!("{}: Will run using URL: {}", LOG_NAME, REPORT_URL);
+        debug!("{}: Will run using URL: {}", LOG_NAME, REPORT_URI);
 
-        // Build HTTP client
-        let mut headers = HeaderMap::new();
+        // Build HTTP client headers
+        let mut headers = Headers::new();
 
         headers.insert(
-            USER_AGENT,
+            "User-Agent",
             format!(
                 "rs-{}/{}",
                 env!("CARGO_PKG_NAME"),
                 env!("CARGO_PKG_VERSION")
-            )
-            .parse()
-            .unwrap(),
+            ).as_str(),
         );
 
         headers.insert(
-            AUTHORIZATION,
-            format!("Basic {}", base64::encode(format!(":{}", self.token)))
-                .parse()
-                .unwrap(),
+            "Authorization",
+            format!("Basic {}", base64::encode(format!(":{}", self.token))).as_str(),
         );
 
-        let http_client = Client::builder()
-            .timeout(Duration::from_secs(10))
-            .redirect(RedirectPolicy::none())
-            .gzip(true)
-            .default_headers(headers)
-            .build();
-
         // Build thread manager context?
-        match (self.service_id, self.node_id, self.replica_id, http_client) {
-            (Some(service_id), Some(node_id), Some(replica_id), Ok(client)) => {
+        match (self.service_id, self.node_id, self.replica_id) {
+            (Some(service_id), Some(node_id), Some(replica_id)) => {
                 let manager = ReporterManager {
-                    report_url: format!("{}/report/{}/{}/", REPORT_URL, service_id, node_id),
+                    report_uri: format!("{}/report/{}/{}/", REPORT_URI, service_id, node_id),
                     replica_id: replica_id.to_owned(),
                     interval: self.interval,
-                    client: client,
+                    headers: headers,
                 };
 
                 // Spawn thread
@@ -198,27 +193,46 @@ impl ReporterManager {
 
         debug!(
             "{}: Will send request to URL: {} with payload: {:?}",
-            LOG_NAME, &self.report_url, payload
+            LOG_NAME, &self.report_uri, payload
         );
 
-        // Submit report payload
-        let response = self.client.post(&self.report_url).json(&payload).send();
+        // Encode payload to string
+        let payload_json = serde_json::to_vec(&payload).or(Err(()))?;
+
+        // Generate request URI
+        let request_uri = Uri::try_from(self.report_uri.as_str()).or(Err(()))?;
+
+        // Acquire report response
+        let mut response_sink = io::sink();
+
+        let response = Request::new(&request_uri)
+            .connect_timeout(Some(HTTP_CLIENT_TIMEOUT))
+            .read_timeout(Some(HTTP_CLIENT_TIMEOUT))
+            .write_timeout(Some(HTTP_CLIENT_TIMEOUT))
+            .method(Method::POST)
+            .headers(self.headers.to_owned())
+            .header("Content-Type", "application/json")
+            .header("Content-Length", &payload_json.len())
+            .body(&payload_json)
+            .send(&mut response_sink);
 
         match response {
-            Ok(response_inner) => {
-                let status = response_inner.status();
+            Ok(response) => {
+                let status_code = response.status_code();
 
-                if status == StatusCode::OK {
+                if status_code.is_success() {
                     debug!("{}: Request succeeded", LOG_NAME);
 
+                    // Return with success
                     return Ok(());
                 } else {
-                    warn!("{}: Got non-OK status code: {}", LOG_NAME, status);
+                    warn!("{}: Got non-OK status code: {}", LOG_NAME, status_code);
                 }
             }
             Err(err) => error!("{}: Failed dispatching request: {}", LOG_NAME, err),
         }
 
+        // Return with error
         Err(())
     }
 
