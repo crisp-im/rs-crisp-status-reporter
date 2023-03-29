@@ -18,7 +18,6 @@ use base64::engine::general_purpose::STANDARD as base64_encoder;
 use base64::Engine;
 use http_req::{
     request::{Method, Request},
-    response::Headers,
     uri::Uri,
 };
 use serde_json;
@@ -45,7 +44,8 @@ struct ReporterManager {
     report_uri: String,
     replica_id: String,
     interval: Duration,
-    headers: Headers,
+    useragent: String,
+    authorization: String,
 }
 
 #[derive(Serialize, Debug)]
@@ -77,28 +77,6 @@ impl<'a> Reporter<'a> {
     pub fn run(&self) -> Result<(), ()> {
         debug!("{}: Will run using URL: {}", LOG_NAME, REPORT_URI);
 
-        // Build HTTP client headers
-        let mut headers = Headers::new();
-
-        headers.insert(
-            "User-Agent",
-            format!(
-                "rs-{}/{}",
-                env!("CARGO_PKG_NAME"),
-                env!("CARGO_PKG_VERSION")
-            )
-            .as_str(),
-        );
-
-        headers.insert(
-            "Authorization",
-            format!(
-                "Basic {}",
-                base64_encoder.encode(&format!(":{}", self.token))
-            )
-            .as_str(),
-        );
-
         // Build thread manager context?
         match (self.service_id, self.node_id, self.replica_id) {
             (Some(service_id), Some(node_id), Some(replica_id)) => {
@@ -106,7 +84,17 @@ impl<'a> Reporter<'a> {
                     report_uri: format!("{}/report/{}/{}/", REPORT_URI, service_id, node_id),
                     replica_id: replica_id.to_owned(),
                     interval: self.interval,
-                    headers: headers,
+
+                    useragent: format!(
+                        "rs-{}/{}",
+                        env!("CARGO_PKG_NAME"),
+                        env!("CARGO_PKG_VERSION")
+                    ),
+
+                    authorization: format!(
+                        "Basic {}",
+                        base64_encoder.encode(&format!(":{}", self.token))
+                    ),
                 };
 
                 // Spawn thread
@@ -217,7 +205,8 @@ impl ReporterManager {
             .read_timeout(Some(HTTP_CLIENT_TIMEOUT))
             .write_timeout(Some(HTTP_CLIENT_TIMEOUT))
             .method(Method::POST)
-            .headers(self.headers.to_owned())
+            .header("User-Agent", &self.useragent)
+            .header("Authorization", &self.authorization)
             .header("Content-Type", "application/json")
             .header("Content-Length", &payload_json.len())
             .body(&payload_json)
