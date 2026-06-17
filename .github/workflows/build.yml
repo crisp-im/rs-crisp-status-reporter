@@ -26,6 +26,10 @@ jobs:
       - name: Verify versions
         run: rustc --version && rustup --version && cargo --version
 
+      - name: Authenticate to registry
+        uses: rust-lang/crates-io-auth-action@v1
+        id: auth
+
       - name: Release package
         run: cargo publish --no-verify
         env:
